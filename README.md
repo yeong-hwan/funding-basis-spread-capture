@@ -3,7 +3,7 @@
 Arbitrum에서 Solidity로 **Funding/Basis Spread Capture** 전략(Spot Long + Perp Short로 델타중립 후 Funding 수취)을 위한 스마트컨트랙트/봇 연동 프로젝트를 구성합니다.
 
 > 현재 단계: **Solidity 개발 환경(Foundry) 세팅 + 기본 컨트랙트 스캐폴딩**  
-> Aster 거래소 연동/정확한 포지션 관리 로직은 이후 명세에 맞춰 확장합니다.
+> Perp venue는 **Hyperliquid**로 전환했습니다.
 
 ## 로컬 개발 환경 (Foundry)
 
@@ -60,12 +60,16 @@ forge script script/Deploy.s.sol:Deploy \
 
 ## 구조
 - `src/`: Solidity 컨트랙트
-- `src/interfaces/`: 외부 프로토콜(예: Aster) 인터페이스 플레이스홀더
+- `src/interfaces/`: 외부 프로토콜 인터페이스 플레이스홀더(예: 1inch)
 - `script/`: 배포 스크립트(Foundry `forge script`)
 - `test/`: 테스트
 - `SPEC/`: 요구사항 및 개발 스펙 문서
 
 ## 다음에 필요한 명세(천천히 주셔도 됩니다)
-- 어떤 거래소/계정 모델로 Aster에 주문을 넣을지(온체인/오프체인, 서명 방식)
+- Hyperliquid 계정/서명/주문 모델(keeper 운영 방식)
 - 자금 흐름(유저 예치/출금, 수수료 구조, Keeper 권한)
 - 리스크(청산/슬리피지/리밸런싱 트리거)와 모니터링 방식
+
+## 수수료 참고(중요)
+
+- 현재 Perp venue는 **Hyperliquid**로 전환했습니다(세부 수수료/펀딩/정산 모델은 확정 후 문서화).
