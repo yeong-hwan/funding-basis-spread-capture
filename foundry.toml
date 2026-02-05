@@ -18,3 +18,12 @@ line_length = 100
 tab_width = 4
 bracket_spacing = true
 
+# HyperEVM Network Configurations
+[rpc_endpoints]
+hyperevm_testnet = "https://rpc.hyperliquid-testnet.xyz/evm"
+hyperevm_mainnet = "https://rpc.hyperliquid.xyz/evm"
+
+[etherscan]
+hyperevm_testnet = { key = "", url = "https://explorer.hyperliquid-testnet.xyz/api" }
+hyperevm_mainnet = { key = "", url = "https://explorer.hyperliquid.xyz/api" }
+

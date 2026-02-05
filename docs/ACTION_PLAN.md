@@ -108,10 +108,16 @@ struct Position {
 
 | 항목 | 값 |
 |------|-----|
-| Chain ID | TBD (테스트넷 확인 필요) |
-| RPC | TBD |
-| Faucet | TBD |
-| Explorer | TBD |
+| Chain ID | 998 |
+| RPC | https://rpc.hyperliquid-testnet.xyz/evm |
+| Faucet | Hyperliquid Discord #testnet-faucet |
+| Explorer | https://explorer.hyperliquid-testnet.xyz |
+
+**메인넷 정보 (참고용):**
+| 항목 | 값 |
+|------|-----|
+| Chain ID | 999 |
+| RPC | https://rpc.hyperliquid.xyz/evm |
 
 ### 3.2 배포 스크립트
 
@@ -186,7 +192,11 @@ test/
 ## 다음 단계
 
 1. ✅ CLAUDE.md 업데이트
-2. 🔄 HyperEVM 인터페이스 구현
-3. ⏳ Vault 리팩토링
-4. ⏳ 테스트넷 배포
-5. ⏳ 통합 테스트
+2. ✅ HyperEVM 인터페이스 구현 (ICoreWriter, IHyperLiquidPrecompiles)
+3. ✅ HyperLiquidActions 라이브러리 구현
+4. ✅ FundingCaptureVault 구현
+5. ✅ Unit 테스트 (6개 통과)
+6. ✅ 테스트넷 설정 및 배포 스크립트
+7. 🔄 테스트넷 배포 및 통합 테스트
+8. ⏳ Arbitrum Spot Long 컨트랙트
+9. ⏳ 크로스체인 통합

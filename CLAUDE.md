@@ -100,11 +100,16 @@ funding-basis-spread-capture/
 - [x] 타겟 자산 선택 → **ETH**
 - [x] 구현 방식 결정 → **컨트랙트 (Solidity)**
 - [x] 테스트 환경 → **테스트넷**
-- [ ] Foundry 프로젝트 세팅
-- [ ] HyperEVM 테스트넷 연동
-- [ ] CoreWriter 인터페이스 구현
+- [x] Foundry 프로젝트 세팅
+- [x] CoreWriter 인터페이스 구현
+- [x] HyperLiquid Precompile 인터페이스 구현
+- [x] FundingCaptureVault 구현 (Perp Short)
+- [x] Unit 테스트 작성 (6개 통과)
+- [x] HyperEVM 테스트넷 설정 (foundry.toml)
+- [x] 배포/인터랙션 스크립트 작성
+- [ ] HyperEVM 테스트넷 배포 및 통합 테스트
 - [ ] Spot Long 컨트랙트 (Arbitrum)
-- [ ] 통합 테스트
+- [ ] 크로스체인 통합
 
 ---
 
@@ -114,3 +119,4 @@ funding-basis-spread-capture/
 |------|----------|
 | 2026-02-06 | 초기 문서 생성 |
 | 2026-02-06 | 구현 방식 결정: Solidity 컨트랙트, ETH, 테스트넷 |
+| 2026-02-06 | HyperEVM 테스트넷 설정, 인터랙션 스크립트 추가 |
