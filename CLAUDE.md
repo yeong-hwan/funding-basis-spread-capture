@@ -8,9 +8,20 @@
 
 **Funding/Basis Spread Capture** - Delta Neutral 전략을 통한 Funding Fee 수익 획득 시스템
 
-- **Perp Short**: Hyperliquid (1x, Cross)
+- **Perp Short**: Hyperliquid HyperEVM (1x, Cross) - **컨트랙트 방식**
 - **Spot Long**: Arbitrum (Uniswap)
 - **목표**: 가격 변동 상쇄, Funding Fee만 수익
+
+---
+
+## 결정 사항 ✅
+
+| 항목 | 결정 |
+|------|------|
+| **구현 방식** | 컨트랙트 (Solidity, HyperEVM) |
+| **타겟 자산** | ETH |
+| **테스트 환경** | 테스트넷 (Faucet 금액) |
+| **메인 언어** | Solidity |
 
 ---
 
@@ -38,10 +49,23 @@
 
 ## 기술 스택
 
-- **Language**: Python 3.11+ (또는 TypeScript)
-- **Perp Exchange**: Hyperliquid
-- **Spot Chain**: Arbitrum
-- **Spot DEX**: Uniswap V3
+| 구분 | 기술 |
+|------|------|
+| **Language** | Solidity (메인), Foundry |
+| **Perp Chain** | Hyperliquid HyperEVM |
+| **Spot Chain** | Arbitrum |
+| **Spot DEX** | Uniswap V3 |
+| **Framework** | Foundry (forge, cast, anvil) |
+
+---
+
+## 핵심 컨트랙트 주소 (Hyperliquid)
+
+| 컨트랙트 | 주소 |
+|----------|------|
+| **CoreWriter** | `0x3333333333333333333333333333333333333333` |
+| **Oracle Precompile** | `0x0000000000000000000000000000000000000807` |
+| **Precompile Base** | `0x0000000000000000000000000000000000000800` |
 
 ---
 
@@ -58,18 +82,29 @@
 ## 문서 구조
 
 ```
-docs/
-├── SPEC.md         # 기능 명세서
-└── ACTION_PLAN.md  # 액션플랜
+funding-basis-spread-capture/
+├── CLAUDE.md                # 이 문서
+├── docs/
+│   ├── SPEC.md              # 기능 명세서
+│   └── ACTION_PLAN.md       # 액션플랜
+├── src/                     # Solidity 컨트랙트
+├── script/                  # 배포 스크립트
+├── test/                    # Foundry 테스트
+└── lib/                     # 외부 라이브러리
 ```
 
 ---
 
-## TODO / 미해결 질문
+## TODO
 
-- [ ] 타겟 자산 선택 (ETH/BTC/기타)
-- [ ] 초기 자금 규모 결정
-- [ ] 파라미터 값 확정 (ε, MIN_FUNDING 등)
+- [x] 타겟 자산 선택 → **ETH**
+- [x] 구현 방식 결정 → **컨트랙트 (Solidity)**
+- [x] 테스트 환경 → **테스트넷**
+- [ ] Foundry 프로젝트 세팅
+- [ ] HyperEVM 테스트넷 연동
+- [ ] CoreWriter 인터페이스 구현
+- [ ] Spot Long 컨트랙트 (Arbitrum)
+- [ ] 통합 테스트
 
 ---
 
@@ -77,4 +112,5 @@ docs/
 
 | 날짜 | 변경 내용 |
 |------|----------|
-| 2026-02-06 | 초기 문서 생성, 기본 요구사항 정리 |
+| 2026-02-06 | 초기 문서 생성 |
+| 2026-02-06 | 구현 방식 결정: Solidity 컨트랙트, ETH, 테스트넷 |
