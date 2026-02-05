@@ -12,8 +12,11 @@ interface Vm {
 
     function envAddress(string calldata name) external returns (address);
     function envUint(string calldata name) external returns (uint256);
+    function envOr(string calldata name, address defaultValue) external returns (address);
 
     function startBroadcast(uint256 privateKey) external;
     function stopBroadcast() external;
+
+    function addr(uint256 privateKey) external pure returns (address);
 }
 
