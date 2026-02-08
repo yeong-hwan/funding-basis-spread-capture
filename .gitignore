@@ -50,6 +50,7 @@ yarn-debug.log*
 yarn-error.log*
 keeper/.env
 keeper/dist/
+keeper/logs/
 
 # IDE
 .idea/

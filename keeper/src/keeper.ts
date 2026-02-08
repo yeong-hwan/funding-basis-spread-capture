@@ -2,6 +2,8 @@ import { ethers } from 'ethers';
 import { config } from './config';
 import { FundingCaptureVaultV2Abi, DeltaCoordinatorAbi, SpotLongVaultAbi } from './abis';
 import { HyperliquidClient } from './hyperliquid';
+import { logger } from './logger';
+import { adminServer } from './admin';
 
 /**
  * Delta Neutral Strategy Keeper
@@ -24,6 +26,11 @@ export class Keeper {
   private hyperliquidClient: HyperliquidClient;
 
   private isRunning: boolean = false;
+  private latestMetrics: {
+    market?: { ethFundingRate: number; ethMarkPrice: number; ethOraclePrice: number; annualizedApr: number };
+    vault?: { state: string; spotValueUsd: number; deltaRatioBps: number };
+    wallet?: { hyperEvmBalance: string; arbitrumBalance: string };
+  } = {};
 
   constructor() {
     // Providers
@@ -65,6 +72,12 @@ export class Keeper {
    * Keeper 시작
    */
   async start(): Promise<void> {
+    logger.info('Keeper', '🚀 Starting Keeper Bot...', {
+      vault: config.hyperEvmVault,
+      coordinator: config.arbitrumCoordinator || 'Not configured',
+      interval: config.scanIntervalMs,
+    });
+
     console.log('🚀 Starting Keeper Bot...');
     console.log(`   HyperEVM Vault: ${config.hyperEvmVault}`);
     console.log(`   Arbitrum Coordinator: ${config.arbitrumCoordinator || 'Not configured'}`);
@@ -73,6 +86,9 @@ export class Keeper {
 
     this.isRunning = true;
 
+    // Admin 서버 시작
+    adminServer.start();
+
     // Initial status
     await this.printStatus();
 
@@ -80,7 +96,14 @@ export class Keeper {
     while (this.isRunning) {
       try {
         await this.runCycle();
+        // Admin 서버에 메트릭 업데이트
+        adminServer.updateMetrics({
+          market: this.latestMetrics.market,
+          vault: this.latestMetrics.vault,
+          wallet: this.latestMetrics.wallet,
+        });
       } catch (error) {
+        logger.error('Keeper', 'Error in keeper cycle', { error: String(error) });
         console.error('❌ Error in keeper cycle:', error);
       }
 
@@ -93,8 +116,10 @@ export class Keeper {
    * Keeper 중지
    */
   stop(): void {
+    logger.info('Keeper', '🛑 Stopping Keeper Bot...');
     console.log('🛑 Stopping Keeper Bot...');
     this.isRunning = false;
+    adminServer.stop();
   }
 
   /**
@@ -125,22 +150,45 @@ export class Keeper {
   async checkFundingRate(): Promise<void> {
     try {
       const marketData = await this.hyperliquidClient.getMarketData('ETH');
+      const annualizedRate = marketData.fundingRate * 3 * 365 * 100;
+      const isFavorable = marketData.fundingRate > config.minFundingRate;
+
+      // 메트릭 저장
+      this.latestMetrics.market = {
+        ethFundingRate: marketData.fundingRate,
+        ethMarkPrice: marketData.markPrice,
+        ethOraclePrice: marketData.oraclePrice,
+        annualizedApr: annualizedRate,
+      };
+
+      // 로깅
+      logger.info('Market', 'ETH market data fetched', {
+        fundingRate: marketData.fundingRate,
+        markPrice: marketData.markPrice,
+        apr: annualizedRate,
+      });
+      logger.metric('eth_funding_rate', marketData.fundingRate);
+      logger.metric('eth_mark_price', marketData.markPrice);
+      logger.metric('eth_apr', annualizedRate);
 
       console.log('\n📊 Market Data (ETH):');
       console.log(`   Funding Rate: ${(marketData.fundingRate * 100).toFixed(6)}%`);
       console.log(`   Mark Price:   $${marketData.markPrice.toFixed(2)}`);
       console.log(`   Oracle Price: $${marketData.oraclePrice.toFixed(2)}`);
       console.log(`   Open Interest: ${marketData.openInterest.toFixed(2)} ETH`);
-
-      // Funding Rate 체크
-      const isFavorable = marketData.fundingRate > config.minFundingRate;
       console.log(`   Status: ${isFavorable ? '✅ Favorable (Short pays)' : '⚠️ Unfavorable'}`);
-
-      // 연 환산 수익률
-      const annualizedRate = marketData.fundingRate * 3 * 365 * 100; // 8시간마다 3번
       console.log(`   Annualized: ${annualizedRate.toFixed(2)}% APR`);
 
+      // Funding Rate 경고
+      if (!isFavorable) {
+        logger.warn('Market', 'Funding rate unfavorable for short position', {
+          rate: marketData.fundingRate,
+          threshold: config.minFundingRate,
+        });
+      }
+
     } catch (error) {
+      logger.error('Market', 'Failed to fetch funding rate', { error: String(error) });
       console.error('   ❌ Failed to fetch funding rate:', error);
     }
   }
@@ -156,21 +204,53 @@ export class Keeper {
       ]);
 
       const stateNames = ['IDLE', 'ACTIVE', 'EXITING'];
+      const stateName = stateNames[Number(state)] || 'UNKNOWN';
+      const spotValue = Number(ethers.formatUnits(spotValueUsd, 6));
 
-      console.log('\n🏦 HyperEVM Vault:');
-      console.log(`   State: ${stateNames[Number(state)] || 'UNKNOWN'}`);
-      console.log(`   Spot Value: $${ethers.formatUnits(spotValueUsd, 6)}`);
+      let deltaRatioBps = 0;
 
       // Delta 계산 시도 (Precompile 필요)
       try {
-        const [deltaUsd, deltaRatioBps] = await this.hyperEvmVault.calculateDelta();
+        const [deltaUsd, ratio] = await this.hyperEvmVault.calculateDelta();
+        deltaRatioBps = Number(ratio);
+        console.log('\n🏦 HyperEVM Vault:');
+        console.log(`   State: ${stateName}`);
+        console.log(`   Spot Value: $${spotValue}`);
         console.log(`   Delta: $${ethers.formatUnits(deltaUsd, 6)}`);
-        console.log(`   Delta Ratio: ${Number(deltaRatioBps) / 100}%`);
+        console.log(`   Delta Ratio: ${deltaRatioBps / 100}%`);
       } catch {
+        console.log('\n🏦 HyperEVM Vault:');
+        console.log(`   State: ${stateName}`);
+        console.log(`   Spot Value: $${spotValue}`);
         console.log(`   Delta: N/A (precompile unavailable in fork)`);
       }
 
+      // 메트릭 저장
+      this.latestMetrics.vault = {
+        state: stateName,
+        spotValueUsd: spotValue,
+        deltaRatioBps,
+      };
+
+      // 로깅
+      logger.info('Vault', 'Vault state checked', {
+        state: stateName,
+        spotValue,
+        deltaRatioBps,
+      });
+      logger.metric('vault_spot_value', spotValue);
+      logger.metric('vault_delta_ratio', deltaRatioBps);
+
+      // Delta 경고
+      if (deltaRatioBps > config.deltaThresholdBps) {
+        logger.warn('Vault', 'Delta exceeds threshold', {
+          current: deltaRatioBps,
+          threshold: config.deltaThresholdBps,
+        });
+      }
+
     } catch (error) {
+      logger.error('Vault', 'Failed to fetch vault state', { error: String(error) });
       console.error('   ❌ Failed to fetch vault state:', error);
     }
   }
@@ -257,10 +337,26 @@ export class Keeper {
       const hyperEvmBalance = await this.hyperEvmProvider.getBalance(this.hyperEvmWallet.address);
       const arbitrumBalance = await this.arbitrumProvider.getBalance(this.arbitrumWallet.address);
 
+      const hypeBalance = ethers.formatEther(hyperEvmBalance);
+      const ethBalance = ethers.formatEther(arbitrumBalance);
+
+      // 메트릭 저장
+      this.latestMetrics.wallet = {
+        hyperEvmBalance: hypeBalance,
+        arbitrumBalance: ethBalance,
+      };
+
+      logger.info('Wallet', 'Balances fetched', {
+        address: this.hyperEvmWallet.address,
+        hype: hypeBalance,
+        eth: ethBalance,
+      });
+
       console.log(`\n👛 Keeper Wallet: ${this.hyperEvmWallet.address}`);
-      console.log(`   HyperEVM Balance: ${ethers.formatEther(hyperEvmBalance)} HYPE`);
-      console.log(`   Arbitrum Balance: ${ethers.formatEther(arbitrumBalance)} ETH`);
+      console.log(`   HyperEVM Balance: ${hypeBalance} HYPE`);
+      console.log(`   Arbitrum Balance: ${ethBalance} ETH`);
     } catch (error) {
+      logger.error('Wallet', 'Failed to fetch balances', { error: String(error) });
       console.error('Failed to fetch balances:', error);
     }
 
