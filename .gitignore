@@ -48,6 +48,8 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+keeper/.env
+keeper/dist/
 
 # IDE
 .idea/
