@@ -150,10 +150,9 @@ export class Keeper {
    */
   async checkHyperEvmVault(): Promise<void> {
     try {
-      const [state, spotValueUsd, perpShortSize] = await Promise.all([
+      const [state, spotValueUsd] = await Promise.all([
         this.hyperEvmVault.state(),
         this.hyperEvmVault.spotValueUsd(),
-        this.hyperEvmVault.perpShortSizeWei(),
       ]);
 
       const stateNames = ['IDLE', 'ACTIVE', 'EXITING'];
@@ -161,15 +160,14 @@ export class Keeper {
       console.log('\n🏦 HyperEVM Vault:');
       console.log(`   State: ${stateNames[Number(state)] || 'UNKNOWN'}`);
       console.log(`   Spot Value: $${ethers.formatUnits(spotValueUsd, 6)}`);
-      console.log(`   Perp Short: ${ethers.formatEther(perpShortSize)} ETH`);
 
-      // Delta 계산 시도
+      // Delta 계산 시도 (Precompile 필요)
       try {
         const [deltaUsd, deltaRatioBps] = await this.hyperEvmVault.calculateDelta();
         console.log(`   Delta: $${ethers.formatUnits(deltaUsd, 6)}`);
         console.log(`   Delta Ratio: ${Number(deltaRatioBps) / 100}%`);
       } catch {
-        console.log(`   Delta: N/A (precompile unavailable)`);
+        console.log(`   Delta: N/A (precompile unavailable in fork)`);
       }
 
     } catch (error) {
@@ -189,17 +187,18 @@ export class Keeper {
     try {
       console.log('\n🔄 Syncing positions to Arbitrum...');
 
-      // HyperEVM에서 포지션 조회
-      const perpShortSize = await this.hyperEvmVault.perpShortSizeWei();
+      // Spot Value 조회
+      const spotValueUsd = await this.hyperEvmVault.spotValueUsd();
 
-      // Mark Price로 USD 가치 계산
+      // Mark Price로 예상 Perp 수량 계산
       const markPrice = await this.hyperliquidClient.getMarkPrice('ETH');
-      const perpValueUsd = BigInt(Math.floor(
-        Number(ethers.formatEther(perpShortSize)) * markPrice * 1e6
+      const perpShortSize = BigInt(Math.floor(
+        Number(ethers.formatUnits(spotValueUsd, 6)) / markPrice * 1e18
       ));
+      const perpValueUsd = spotValueUsd; // Delta neutral이므로 Spot = Perp
 
-      console.log(`   Perp Short Size: ${ethers.formatEther(perpShortSize)} ETH`);
-      console.log(`   Perp Value USD: $${ethers.formatUnits(perpValueUsd, 6)}`);
+      console.log(`   Spot Value: $${ethers.formatUnits(spotValueUsd, 6)}`);
+      console.log(`   Est. Perp Size: ${ethers.formatEther(perpShortSize)} ETH`);
 
       // Arbitrum에 동기화
       const tx = await this.arbitrumCoordinator.syncPerpPosition(

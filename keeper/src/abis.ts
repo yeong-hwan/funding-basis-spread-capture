@@ -4,7 +4,6 @@ export const FundingCaptureVaultV2Abi = [
   'function owner() view returns (address)',
   'function state() view returns (uint8)',
   'function spotValueUsd() view returns (uint256)',
-  'function perpShortSizeWei() view returns (uint256)',
   'function lastRebalanceTime() view returns (uint256)',
   'function getEthOraclePrice() view returns (uint256)',
   'function getEthMarkPrice() view returns (uint256)',
@@ -16,17 +15,15 @@ export const FundingCaptureVaultV2Abi = [
   'function PRICE_DECIMALS() view returns (uint256)',
 
   // State Changing Functions
-  'function updateSpotValue(uint256 newSpotValueUsd)',
-  'function openShort(uint256 sizeDeltaWei, uint256 maxSlippageBps)',
+  'function updateSpotValue(uint256 newSpotValue)',
+  'function openShort(uint64 sizeWei)',
   'function closeShort()',
   'function rebalance()',
   'function transferOwnership(address newOwner)',
 
   // Events
   'event SpotValueUpdated(uint256 oldValue, uint256 newValue)',
-  'event ShortOpened(uint256 sizeDeltaWei, uint256 priceUsed)',
-  'event ShortClosed(uint256 sizeDeltaWei)',
-  'event Rebalanced(int256 deltaBefore, int256 deltaAfter)',
+  'event StateChanged(uint8 oldState, uint8 newState)',
 ];
 
 // SpotLongVault ABI (Arbitrum)
