@@ -104,12 +104,19 @@ funding-basis-spread-capture/
 - [x] CoreWriter 인터페이스 구현
 - [x] HyperLiquid Precompile 인터페이스 구현
 - [x] FundingCaptureVault 구현 (Perp Short)
-- [x] Unit 테스트 작성 (6개 통과)
+- [x] FundingCaptureVaultV2 (공식 hyper-evm-lib 사용)
+- [x] Unit 테스트 작성 (12개 통과)
 - [x] HyperEVM 테스트넷 설정 (foundry.toml)
 - [x] 배포/인터랙션 스크립트 작성
-- [ ] HyperEVM 테스트넷 배포 및 통합 테스트
-- [ ] Spot Long 컨트랙트 (Arbitrum)
-- [ ] 크로스체인 통합
+- [x] Spot Long 컨트랙트 (Arbitrum) - SpotLongVault
+- [x] DeltaCoordinator (크로스체인 Delta 관리)
+- [x] Chainlink Oracle 연동
+- [x] 컨트랙트 주소 정리 (Addresses.sol)
+- [x] Keeper 운영 가이드
+- [ ] HyperEVM 테스트넷 배포 (Faucet 자금 필요)
+- [ ] Arbitrum 테스트넷 배포
+- [ ] Keeper Bot 구현 (TypeScript)
+- [ ] 통합 테스트
 
 ---
 
@@ -120,3 +127,4 @@ funding-basis-spread-capture/
 | 2026-02-06 | 초기 문서 생성 |
 | 2026-02-06 | 구현 방식 결정: Solidity 컨트랙트, ETH, 테스트넷 |
 | 2026-02-06 | HyperEVM 테스트넷 설정, 인터랙션 스크립트 추가 |
+| 2026-02-08 | Arbitrum Spot Long 전체 시스템 구현 완료 |
