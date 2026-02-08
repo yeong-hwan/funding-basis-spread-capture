@@ -95,6 +95,21 @@ funding-basis-spread-capture/
 
 ---
 
+## 배포 현황
+
+### HyperEVM Testnet
+| 컨트랙트 | 주소 | 상태 |
+|----------|------|------|
+| **FundingCaptureVaultV2** | `0xd9194Bf446574778C92D3847F4Ce8ABb40cb606e` | ✅ 배포완료 |
+
+### Arbitrum (미배포)
+| 컨트랙트 | 상태 |
+|----------|------|
+| **SpotLongVault** | 코드 완료, 배포 대기 |
+| **DeltaCoordinator** | 코드 완료, 배포 대기 |
+
+---
+
 ## TODO
 
 - [x] 타겟 자산 선택 → **ETH**
@@ -105,7 +120,7 @@ funding-basis-spread-capture/
 - [x] HyperLiquid Precompile 인터페이스 구현
 - [x] FundingCaptureVault 구현 (Perp Short)
 - [x] FundingCaptureVaultV2 (공식 hyper-evm-lib 사용)
-- [x] Unit 테스트 작성 (12개 통과)
+- [x] Unit 테스트 작성 (53개 통과)
 - [x] HyperEVM 테스트넷 설정 (foundry.toml)
 - [x] 배포/인터랙션 스크립트 작성
 - [x] Spot Long 컨트랙트 (Arbitrum) - SpotLongVault
@@ -113,10 +128,29 @@ funding-basis-spread-capture/
 - [x] Chainlink Oracle 연동
 - [x] 컨트랙트 주소 정리 (Addresses.sol)
 - [x] Keeper 운영 가이드
-- [ ] HyperEVM 테스트넷 배포 (Faucet 자금 필요)
-- [ ] Arbitrum 테스트넷 배포
-- [ ] Keeper Bot 구현 (TypeScript)
-- [ ] 통합 테스트
+- [x] HyperEVM 테스트넷 배포 ✅
+- [x] Keeper Bot 구현 (TypeScript) ✅
+- [x] SPEC 기반 테스트 코드 작성 ✅
+- [ ] Arbitrum 테스트넷 배포 (ETH 가스비 필요)
+- [ ] 실전 통합 테스트 (Short 오픈/클로즈)
+
+---
+
+## Keeper Bot 사용법
+
+```bash
+cd keeper
+npm install
+
+# Funding Rate 조회 (설정 없이 실행 가능)
+npm run keeper -- --funding
+
+# Keeper 상태 확인
+npm run keeper -- --status
+
+# 모니터링 루프 시작
+npm run keeper
+```
 
 ---
 
@@ -128,3 +162,6 @@ funding-basis-spread-capture/
 | 2026-02-06 | 구현 방식 결정: Solidity 컨트랙트, ETH, 테스트넷 |
 | 2026-02-06 | HyperEVM 테스트넷 설정, 인터랙션 스크립트 추가 |
 | 2026-02-08 | Arbitrum Spot Long 전체 시스템 구현 완료 |
+| 2026-02-08 | HyperEVM 테스트넷 배포 완료 (0xd919...606e) |
+| 2026-02-08 | SPEC 기반 테스트 53개 작성 완료 |
+| 2026-02-08 | TypeScript Keeper Bot 구현 완료 |
